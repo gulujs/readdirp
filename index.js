@@ -1,13 +1,13 @@
-const fs = require('fs');
-const {
+import * as fs from 'fs';
+import {
   readdir,
   stat,
   lstat,
   realpath
-} = require('fs/promises');
-const { Readable } = require('stream');
-const Path = require('path');
-const picomatch = require('picomatch');
+} from 'fs/promises';
+import { Readable } from 'stream';
+import * as Path from 'path';
+import picomatch from 'picomatch';
 
 /**
  * @typedef {Object} EntryInfo
@@ -65,7 +65,7 @@ const normalizeFilter = (filter, filterEntryKey) => {
   return entry => positive.some(f => f(entry[filterEntryKey]));
 };
 
-class ReaddirpStream extends Readable {
+export class ReaddirpStream extends Readable {
   static get defaultOptions() {
     return {
       root: '.',
@@ -297,7 +297,7 @@ class ReaddirpStream extends Readable {
  * @param {String} root Root directory
  * @param {ReaddirpArguments=} options Options to specify root (start directory), filters and recursion depth
  */
-const readdirp = (root, options = {}) => {
+export function readdirp(root, options = {}) {
   if (!root) {
     throw new Error('readdirp: root argument is required. Usage: readdirp(root, options)');
   } else if (typeof root !== 'string') {
@@ -308,9 +308,4 @@ const readdirp = (root, options = {}) => {
 
   options.root = root;
   return new ReaddirpStream(options);
-};
-
-module.exports = {
-  ReaddirpStream,
-  readdirp
-};
+}

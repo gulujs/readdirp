@@ -1,23 +1,21 @@
-const fs = require('fs');
-const {
+import * as fs from 'fs';
+import {
   mkdir,
   symlink,
   readdir,
   readFile,
   writeFile
-} = require('fs/promises');
-const Path = require('path');
-const { Readable } = require('stream');
-const { promisify } = require('util');
-const chai = require('chai');
-const chaiSubset = require('chai-subset');
-const rimraf = require('rimraf');
-const { readdirp, ReaddirpStream } = require('.');
-
-chai.use(chaiSubset);
-const expect = chai.expect;
+} from 'fs/promises';
+import * as Path from 'path';
+import { Readable } from 'stream';
+import { promisify } from 'util';
+import { fileURLToPath } from 'url';
+import { expect } from 'chai';
+import rimraf from 'rimraf';
+import { readdirp, ReaddirpStream } from './index.js';
 
 const pRimraf = promisify(rimraf);
+const __dirname = Path.dirname(fileURLToPath(import.meta.url));
 
 const supportsDirent = 'Dirent' in fs;
 const isWindows = process.platform === 'win32';
@@ -75,7 +73,7 @@ describe('basic', () => {
     const res = await read();
     expect(res).to.have.lengthOf(files.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(files[index], currPath));
+      expect(entry).to.deep.include(formatEntry(files[index], currPath));
     });
   });
 });
@@ -84,6 +82,7 @@ describe('symlinks', () => {
   // not using arrow function, because this.skip
   before(function () {
     // GitHub Actions / default Windows installation disable symlink support unless admin
+    // eslint-disable-next-line no-invalid-this
     if (isWindows) this.skip();
   });
 
@@ -92,7 +91,7 @@ describe('symlinks', () => {
     await symlink(Path.join(__dirname, 'test.js'), newPath);
     const res = await read();
     const first = res[0];
-    expect(first).to.containSubset(formatEntry('test-symlinked.js', currPath));
+    expect(first).to.deep.include(formatEntry('test-symlinked.js', currPath));
     const contents = await readFile(first.fullPath);
     expect(contents).to.match(/handles symlinks/); // name of this test
   });
@@ -117,7 +116,7 @@ describe('symlinks', () => {
     const res = await read({ lstat: true, alwaysStat: true });
     expect(res).to.have.lengthOf(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(expect1[index], currPath, false));
+      expect(entry).to.deep.include(formatEntry(expect1[index], currPath, false));
       expect(entry).to.include.own.key('stats');
       if (entry.basename === symlinkName) {
         expect(entry.stats.isSymbolicLink()).to.equals(true);
@@ -158,7 +157,7 @@ describe('type', () => {
     const res = await read({ type: 'files' });
     expect(res).to.have.lengthOf(files.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(files[index], currPath));
+      expect(entry).to.deep.include(formatEntry(files[index], currPath));
     });
   });
 
@@ -167,7 +166,7 @@ describe('type', () => {
     const res = await read({ type: 'directories' });
     expect(res).to.have.lengthOf(dirs.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(dirs[index], currPath));
+      expect(entry).to.deep.include(formatEntry(dirs[index], currPath));
     });
   });
 
@@ -177,7 +176,7 @@ describe('type', () => {
     const all = files.concat(dirs);
     expect(res).to.have.lengthOf(all.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(all[index], currPath));
+      expect(entry).to.deep.include(formatEntry(all[index], currPath));
     });
   });
 
@@ -207,7 +206,7 @@ describe('depth', () => {
     const res = await read({ depth: 0 });
     expect(res).to.have.lengthOf(depth0.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(depth0[index], currPath));
+      expect(entry).to.deep.include(formatEntry(depth0[index], currPath));
     });
   });
 
@@ -218,7 +217,7 @@ describe('depth', () => {
     res
       .sort((a, b) => (a.basename > b.basename ? 1 : -1))
       .forEach((entry, index) => {
-        expect(entry).to.containSubset(formatEntry(expect1[index], currPath));
+        expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
       });
   });
 
@@ -229,7 +228,7 @@ describe('depth', () => {
     res
       .sort((a, b) => (a.basename > b.basename ? 1 : -1))
       .forEach((entry, index) => {
-        expect(entry).to.containSubset(formatEntry(expect1[index], currPath));
+        expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
       });
   });
 
@@ -240,7 +239,7 @@ describe('depth', () => {
     res
       .sort((a, b) => (a.basename > b.basename ? 1 : -1))
       .forEach((entry, index) => {
-        expect(entry).to.containSubset(formatEntry(expect1[index], currPath));
+        expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
       });
   });
 });
@@ -255,20 +254,20 @@ describe('filtering', () => {
     const res = await read({ fileFilter: '*.js' });
     expect(res).to.have.lengthOf(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(expect1[index], currPath));
+      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
     });
 
     const res2 = await read({ fileFilter: ['*.js'] });
     expect(res2).to.have.lengthOf(expect1.length);
     res2.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(expect1[index], currPath));
+      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
     });
 
     const expect2 = ['b.txt'];
     const res3 = await read({ fileFilter: ['*.txt'] });
     expect(res3).to.have.lengthOf(expect2.length);
     res3.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(expect2[index], currPath));
+      expect(entry).to.deep.include(formatEntry(expect2[index], currPath));
     });
   });
 
@@ -277,7 +276,7 @@ describe('filtering', () => {
     const res = await read({ fileFilter: [' *.js', '*.rb '] });
     expect(res).to.have.lengthOf(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(expect1[index], currPath));
+      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
     });
   });
 
@@ -286,7 +285,7 @@ describe('filtering', () => {
     const res = await read({ fileFilter: ['*.js', '*.txt'] });
     expect(res).to.have.lengthOf(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(expect1[index], currPath));
+      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
     });
   });
 
@@ -295,7 +294,7 @@ describe('filtering', () => {
     const res = await read({ fileFilter: ['!d.js'] });
     expect(res).to.have.lengthOf(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(expect1[index], currPath));
+      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
     });
   });
 
@@ -304,7 +303,7 @@ describe('filtering', () => {
     const res = await read({ fileFilter: ['*.js', '!d.js'] });
     expect(res).to.have.lengthOf(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(expect1[index], currPath));
+      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
     });
   });
 
@@ -313,7 +312,7 @@ describe('filtering', () => {
     const res = await read({ fileFilter: ['!*.js', '!*.rb'] });
     expect(res).to.have.lengthOf(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(expect1[index], currPath));
+      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
     });
   });
 
@@ -322,7 +321,7 @@ describe('filtering', () => {
     const res = await read({ fileFilter: entry => Path.extname(entry.fullPath) === '.js' });
     expect(res).to.have.lengthOf(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(expect1[index], currPath));
+      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
     });
 
     if (supportsDirent) {
@@ -330,7 +329,7 @@ describe('filtering', () => {
       const res2 = await read({ fileFilter: entry => entry.dirent.isFile() });
       expect(res2).to.have.lengthOf(expect2.length);
       res2.forEach((entry, index) => {
-        expect(entry).to.containSubset(formatEntry(expect2[index], currPath));
+        expect(entry).to.deep.include(formatEntry(expect2[index], currPath));
       });
     }
   });
@@ -340,7 +339,7 @@ describe('filtering', () => {
     const res = await read({ alwaysStat: true, fileFilter: entry => Path.extname(entry.fullPath) === '.js' });
     expect(res).to.have.lengthOf(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(expect1[index], currPath));
+      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
       expect(entry).to.include.own.key('stats');
     });
 
@@ -348,7 +347,7 @@ describe('filtering', () => {
     const res2 = await read({ alwaysStat: true, fileFilter: entry => entry.stats.size > 0 });
     expect(res2).to.have.lengthOf(expect2.length);
     res2.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(expect2[index], currPath));
+      expect(entry).to.deep.include(formatEntry(expect2[index], currPath));
       expect(entry).to.include.own.key('stats');
     });
   });
@@ -383,7 +382,7 @@ describe('various', () => {
     const result = await readdirp(currPath);
     expect(result).to.have.lengthOf(created.length);
     result.forEach((entry, index) => {
-      expect(entry).to.containSubset(formatEntry(created[index], currPath));
+      expect(entry).to.deep.include(formatEntry(created[index], currPath));
     });
   });
 
@@ -447,7 +446,7 @@ describe('various', () => {
     try {
       await readdirp(currPath, { type: 'all', suppressNormalFlowError: false });
     } catch (e) {
-      expect(e).to.be.instanceof(Error);
+      expect(e).to.be.an.instanceof(Error);
       expect(e.code).to.equals('EACCES');
     }
   });

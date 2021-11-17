@@ -1,4 +1,4 @@
-const { readdirp } = require('..');
+import { readdirp } from '../index.js';
 
 const read = async (directory) => {
   const stream = readdirp(directory, { type: 'all' });
