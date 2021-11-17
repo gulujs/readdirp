@@ -1,12 +1,15 @@
-const { createReadStream } = require('fs');
-// eslint-disable-next-line node/no-missing-require
-const es = require('event-stream');
-const { readdirp } = require('..');
+import * as Path from 'path';
+import { fileURLToPath } from 'url';
+import { createReadStream } from 'fs';
+// eslint-disable-next-line node/no-missing-import
+import es from 'event-stream';
+import { readdirp } from '../index.js';
 
 const findLinesMatching = (searchTerm) => {
   return es.through(function (entry) {
     let lineno = 0;
     const matchingLines = [];
+    // eslint-disable-next-line no-invalid-this
     const fileStream = this;
 
     createReadStream(entry.fullPath, { encoding: 'utf-8' })
@@ -26,11 +29,14 @@ const findLinesMatching = (searchTerm) => {
             const result = { file: entry, lines: matchingLines };
             fileStream.emit('data', result); // pass result on to file stream
           }
+          // eslint-disable-next-line no-invalid-this
           this.emit('end');
         }
       ));
   });
 };
+
+const __dirname = Path.dirname(fileURLToPath(import.meta.url));
 
 // create a stream of all javascript files found in this and all sub directories
 // find all lines matching the term

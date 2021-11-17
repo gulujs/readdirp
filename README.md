@@ -10,8 +10,8 @@ npm install @lunjs/readdirp
 
 ## Usage
 
-```javascript
-const readdirp = require('readdirp');
+```js
+import { readdirp } from '@lunjs/readdirp';
 
 // Use streams to achieve small RAM & CPU footprint.
 // 1) Streams example with for-await.
