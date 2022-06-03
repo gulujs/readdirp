@@ -1,15 +1,15 @@
 {
-  "name": "@lunjs/readdirp",
+  "name": "@gulujs/readdirp",
   "description": "Recursive version of fs.readdir with streaming API.",
   "version": "0.2.0",
-  "homepage": "https://github.com/lunjs/readdirp",
+  "homepage": "https://github.com/gulujs/readdirp",
   "repository": {
     "type": "git",
-    "url": "git://github.com/lunjs/readdirp.git"
+    "url": "git://github.com/gulujs/readdirp.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lunjs/readdirp/issues"
+    "url": "https://github.com/gulujs/readdirp/issues"
   },
   "author": "jKey Lu <jkeylu@gmail.com> (https://github.com/jkeylu)",
   "type": "module",
