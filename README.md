@@ -1,17 +1,17 @@
-# @lunjs/readdirp
+# @gulujs/readdirp
 
 Recursive version of [fs.readdir](https://nodejs.org/api/fs.html#fs_fs_readdir_path_options_callback). Exposes a **stream API** and a **promise API**.
 
 ## Installation
 
 ```sh
-npm install @lunjs/readdirp
+npm install @gulujs/readdirp
 ```
 
 ## Usage
 
 ```js
-import { readdirp } from '@lunjs/readdirp';
+import { readdirp } from '@gulujs/readdirp';
 
 // Use streams to achieve small RAM & CPU footprint.
 // 1) Streams example with for-await.
