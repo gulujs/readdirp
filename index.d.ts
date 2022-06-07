@@ -49,6 +49,11 @@ export interface ReaddirpOptions {
    * Directories that do not pass a filter will not be recursed into.
    */
   directoryFilter?: string | string[] | ((entry: EntryInfo) => boolean);
+  /**
+   * when `fileFilter` and `directoryFilter` is glob string,
+   * use which entry value ('basename' or 'path') to test.
+   * default is 'basename'.
+   */
   filterEntryKey?: 'basename' | 'path';
   /**
    * determines if data events on the stream should be emitted for `'files'` (default), `'directories'`, `'files_directories'`, or `'all'`.
