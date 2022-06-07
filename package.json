@@ -1,7 +1,7 @@
 {
   "name": "@gulujs/readdirp",
   "description": "Recursive version of fs.readdir with streaming API.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "homepage": "https://github.com/gulujs/readdirp",
   "repository": {
     "type": "git",
@@ -36,7 +36,8 @@
   "scripts": {
     "lint": "eslint --report-unused-disable-directives --ignore-path .gitignore .",
     "test": "mocha --exit",
-    "coverage": "c8 npm test"
+    "coverage": "c8 npm test",
+    "prepublishOnly": "npm run lint && npm test"
   },
   "dependencies": {
     "picomatch": "^2.3.1"
