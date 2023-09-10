@@ -1,11 +1,3 @@
 {
-  "extends": "@gulujs/eslint-config/js/node",
-  "overrides": [
-    {
-      "files": ["test.js"],
-      "env": {
-        "mocha": true
-      }
-    }
-  ]
+  "extends": "@gulujs/eslint-config/js/node"
 }

@@ -1,3 +1,12 @@
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from 'vitest';
 import * as fs from 'fs';
 import {
   mkdir,
@@ -10,7 +19,6 @@ import * as Path from 'path';
 import { Readable } from 'stream';
 import { promisify } from 'util';
 import { fileURLToPath } from 'url';
-import { expect } from 'chai';
 import rimraf from 'rimraf';
 import { readdirp, ReaddirpStream } from './index.js';
 
@@ -53,16 +61,15 @@ beforeEach(async () => {
   await pRimraf(currPath);
   await mkdir(currPath);
 });
-
 afterEach(async () => {
   await pRimraf(currPath);
 });
 
-before(async () => {
+beforeAll(async () => {
   await pRimraf(root);
   await mkdir(root);
 });
-after(async () => {
+afterAll(async () => {
   await pRimraf(root);
 });
 
@@ -71,16 +78,16 @@ describe('basic', () => {
     const files = ['a.txt', 'b.txt', 'c.txt'];
     await touch(files);
     const res = await read();
-    expect(res).to.have.lengthOf(files.length);
+    expect(res).toHaveLength(files.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(files[index], currPath));
+      expect(entry).toMatchObject(formatEntry(files[index], currPath));
     });
   });
 });
 
 describe('symlinks', () => {
   // not using arrow function, because this.skip
-  before(function () {
+  beforeAll(function () {
     // GitHub Actions / default Windows installation disable symlink support unless admin
     // eslint-disable-next-line no-invalid-this
     if (isWindows) this.skip();
@@ -88,12 +95,12 @@ describe('symlinks', () => {
 
   it('handles symlinks', async () => {
     const newPath = Path.join(currPath, 'test-symlinked.js');
-    await symlink(Path.join(__dirname, 'test.js'), newPath);
+    await symlink(Path.join(__dirname, 'readdirp.test.js'), newPath);
     const res = await read();
     const first = res[0];
-    expect(first).to.deep.include(formatEntry('test-symlinked.js', currPath));
+    expect(first).toMatchObject(formatEntry('test-symlinked.js', currPath));
     const contents = await readFile(first.fullPath);
-    expect(contents).to.match(/handles symlinks/); // name of this test
+    expect(contents).toMatch(/handles symlinks/); // name of this test
   });
 
   it('handles symlinked directories', async () => {
@@ -103,23 +110,23 @@ describe('symlinks', () => {
     await symlink(originalPath, newPath);
     const res = await read();
     const symlinkedFiles = res.map(entry => entry.basename);
-    expect(symlinkedFiles).to.eql(originalFiles);
+    expect(symlinkedFiles).toEqual(originalFiles);
   });
 
   it('should use lstat instead of stat', async () => {
     const files = ['a.txt', 'b.txt', 'c.txt'];
     const symlinkName = 'test-symlinked.js';
     const newPath = Path.join(currPath, symlinkName);
-    await symlink(Path.join(__dirname, 'test.js'), newPath);
+    await symlink(Path.join(__dirname, 'readdirp.test.js'), newPath);
     await touch(files);
     const expect1 = [...files, symlinkName];
     const res = await read({ lstat: true, alwaysStat: true });
-    expect(res).to.have.lengthOf(expect1.length);
+    expect(res).toHaveLength(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(expect1[index], currPath, false));
-      expect(entry).to.include.own.key('stats');
+      expect(entry).toMatchObject(formatEntry(expect1[index], currPath, false));
+      expect(entry).toHaveProperty('stats');
       if (entry.basename === symlinkName) {
-        expect(entry.stats.isSymbolicLink()).to.equals(true);
+        expect(entry.stats.isSymbolicLink()).toBe(true);
       }
     });
   });
@@ -136,15 +143,15 @@ describe('symlinks', () => {
       // eslint-disable-next-line no-empty-function
       .on('data', () => {})
       .on('warn', (warning) => {
-        expect(warning).to.be.an.instanceof(Error);
-        expect(warning.code).to.equals('READDIRP_RECURSIVE_ERROR');
+        expect(warning).toBeInstanceOf(Error);
+        expect(warning.code).toBe('READDIRP_RECURSIVE_ERROR');
         isWarningCalled = true;
       });
     await Promise.race([
       waitForEnd(stream),
       delay(2000)
     ]);
-    expect(isWarningCalled).to.equals(true);
+    expect(isWarningCalled).toBe(true);
   });
 });
 
@@ -155,18 +162,18 @@ describe('type', () => {
   it('files', async () => {
     await touch(files, dirs);
     const res = await read({ type: 'files' });
-    expect(res).to.have.lengthOf(files.length);
+    expect(res).toHaveLength(files.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(files[index], currPath));
+      expect(entry).toMatchObject(formatEntry(files[index], currPath));
     });
   });
 
   it('directories', async () => {
     await touch(files, dirs);
     const res = await read({ type: 'directories' });
-    expect(res).to.have.lengthOf(dirs.length);
+    expect(res).toHaveLength(dirs.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(dirs[index], currPath));
+      expect(entry).toMatchObject(formatEntry(dirs[index], currPath));
     });
   });
 
@@ -174,9 +181,9 @@ describe('type', () => {
     await touch(files, dirs);
     const res = await read({ type: 'all' });
     const all = files.concat(dirs);
-    expect(res).to.have.lengthOf(all.length);
+    expect(res).toHaveLength(all.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(all[index], currPath));
+      expect(entry).toMatchObject(formatEntry(all[index], currPath));
     });
   });
 
@@ -184,7 +191,7 @@ describe('type', () => {
     try {
       await read({ type: 'bogus' });
     } catch (error) {
-      expect(error.message).to.match(/Invalid type/);
+      expect(error.message).toMatch(/Invalid type/);
     }
   });
 });
@@ -204,42 +211,42 @@ describe('depth', () => {
 
   it('0', async () => {
     const res = await read({ depth: 0 });
-    expect(res).to.have.lengthOf(depth0.length);
+    expect(res).toHaveLength(depth0.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(depth0[index], currPath));
+      expect(entry).toMatchObject(formatEntry(depth0[index], currPath));
     });
   });
 
   it('1', async () => {
     const res = await read({ depth: 1 });
     const expect1 = [...depth0, ...depth1];
-    expect(res).to.have.lengthOf(expect1.length);
+    expect(res).toHaveLength(expect1.length);
     res
       .sort((a, b) => (a.basename > b.basename ? 1 : -1))
       .forEach((entry, index) => {
-        expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
+        expect(entry).toMatchObject(formatEntry(expect1[index], currPath));
       });
   });
 
   it('2', async () => {
     const res = await read({ depth: 2 });
     const expect1 = [...depth0, ...depth1, ...depth2];
-    expect(res).to.have.lengthOf(expect1.length);
+    expect(res).toHaveLength(expect1.length);
     res
       .sort((a, b) => (a.basename > b.basename ? 1 : -1))
       .forEach((entry, index) => {
-        expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
+        expect(entry).toMatchObject(formatEntry(expect1[index], currPath));
       });
   });
 
   it('default', async () => {
     const res = await read();
     const expect1 = [...depth0, ...depth1, ...depth2];
-    expect(res).to.have.lengthOf(expect1.length);
+    expect(res).toHaveLength(expect1.length);
     res
       .sort((a, b) => (a.basename > b.basename ? 1 : -1))
       .forEach((entry, index) => {
-        expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
+        expect(entry).toMatchObject(formatEntry(expect1[index], currPath));
       });
   });
 });
@@ -252,84 +259,84 @@ describe('filtering', () => {
   it('glob', async () => {
     const expect1 = ['a.js', 'c.js', 'd.js'];
     const res = await read({ fileFilter: '*.js' });
-    expect(res).to.have.lengthOf(expect1.length);
+    expect(res).toHaveLength(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
+      expect(entry).toMatchObject(formatEntry(expect1[index], currPath));
     });
 
     const res2 = await read({ fileFilter: ['*.js'] });
-    expect(res2).to.have.lengthOf(expect1.length);
+    expect(res2).toHaveLength(expect1.length);
     res2.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
+      expect(entry).toMatchObject(formatEntry(expect1[index], currPath));
     });
 
     const expect2 = ['b.txt'];
     const res3 = await read({ fileFilter: ['*.txt'] });
-    expect(res3).to.have.lengthOf(expect2.length);
+    expect(res3).toHaveLength(expect2.length);
     res3.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(expect2[index], currPath));
+      expect(entry).toMatchObject(formatEntry(expect2[index], currPath));
     });
   });
 
   it('leading and trailing spaces', async () => {
     const expect1 = ['a.js', 'c.js', 'd.js', 'e.rb'];
     const res = await read({ fileFilter: [' *.js', '*.rb '] });
-    expect(res).to.have.lengthOf(expect1.length);
+    expect(res).toHaveLength(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
+      expect(entry).toMatchObject(formatEntry(expect1[index], currPath));
     });
   });
 
   it('multiple glob', async () => {
     const expect1 = ['a.js', 'b.txt', 'c.js', 'd.js'];
     const res = await read({ fileFilter: ['*.js', '*.txt'] });
-    expect(res).to.have.lengthOf(expect1.length);
+    expect(res).toHaveLength(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
+      expect(entry).toMatchObject(formatEntry(expect1[index], currPath));
     });
   });
 
   it('negated glob', async () => {
     const expect1 = ['a.js', 'b.txt', 'c.js', 'e.rb'];
     const res = await read({ fileFilter: ['!d.js'] });
-    expect(res).to.have.lengthOf(expect1.length);
+    expect(res).toHaveLength(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
+      expect(entry).toMatchObject(formatEntry(expect1[index], currPath));
     });
   });
 
   it('glob & negated glob', async () => {
     const expect1 = ['a.js', 'c.js'];
     const res = await read({ fileFilter: ['*.js', '!d.js'] });
-    expect(res).to.have.lengthOf(expect1.length);
+    expect(res).toHaveLength(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
+      expect(entry).toMatchObject(formatEntry(expect1[index], currPath));
     });
   });
 
   it('two negated glob', async () => {
     const expect1 = ['b.txt'];
     const res = await read({ fileFilter: ['!*.js', '!*.rb'] });
-    expect(res).to.have.lengthOf(expect1.length);
+    expect(res).toHaveLength(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
+      expect(entry).toMatchObject(formatEntry(expect1[index], currPath));
     });
   });
 
   it('function', async () => {
     const expect1 = ['a.js', 'c.js', 'd.js'];
     const res = await read({ fileFilter: entry => Path.extname(entry.fullPath) === '.js' });
-    expect(res).to.have.lengthOf(expect1.length);
+    expect(res).toHaveLength(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
+      expect(entry).toMatchObject(formatEntry(expect1[index], currPath));
     });
 
     if (supportsDirent) {
       const expect2 = ['a.js', 'b.txt', 'c.js', 'd.js', 'e.rb'];
       const res2 = await read({ fileFilter: entry => entry.dirent.isFile() });
-      expect(res2).to.have.lengthOf(expect2.length);
+      expect(res2).toHaveLength(expect2.length);
       res2.forEach((entry, index) => {
-        expect(entry).to.deep.include(formatEntry(expect2[index], currPath));
+        expect(entry).toMatchObject(formatEntry(expect2[index], currPath));
       });
     }
   });
@@ -337,18 +344,18 @@ describe('filtering', () => {
   it('function with stats', async () => {
     const expect1 = ['a.js', 'c.js', 'd.js'];
     const res = await read({ alwaysStat: true, fileFilter: entry => Path.extname(entry.fullPath) === '.js' });
-    expect(res).to.have.lengthOf(expect1.length);
+    expect(res).toHaveLength(expect1.length);
     res.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(expect1[index], currPath));
-      expect(entry).to.include.own.key('stats');
+      expect(entry).toMatchObject(formatEntry(expect1[index], currPath));
+      expect(entry).toHaveProperty('stats');
     });
 
     const expect2 = ['a.js', 'b.txt', 'c.js', 'd.js', 'e.rb'];
     const res2 = await read({ alwaysStat: true, fileFilter: entry => entry.stats.size > 0 });
-    expect(res2).to.have.lengthOf(expect2.length);
+    expect(res2).toHaveLength(expect2.length);
     res2.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(expect2[index], currPath));
-      expect(entry).to.include.own.key('stats');
+      expect(entry).toMatchObject(formatEntry(expect2[index], currPath));
+      expect(entry).toHaveProperty('stats');
     });
   });
 });
@@ -356,15 +363,15 @@ describe('filtering', () => {
 describe('various', () => {
   it('emits readable stream', () => {
     const stream = readdirp(currPath);
-    expect(stream).to.be.an.instanceof(Readable);
-    expect(stream).to.be.an.instanceof(ReaddirpStream);
+    expect(stream).toBeInstanceOf(Readable);
+    expect(stream).toBeInstanceOf(ReaddirpStream);
   });
 
   it('fails without root option passed', async () => {
     try {
       readdirp();
     } catch (error) {
-      expect(error).to.be.an.instanceof(Error);
+      expect(error).toBeInstanceOf(Error);
     }
   });
 
@@ -372,7 +379,7 @@ describe('various', () => {
     try {
       readdirp({ root: '.' });
     } catch (error) {
-      expect(error).to.be.an.instanceof(Error);
+      expect(error).toBeInstanceOf(Error);
     }
   });
 
@@ -380,9 +387,9 @@ describe('various', () => {
     const created = ['a.txt', 'c.txt'];
     await touch(created);
     const result = await readdirp(currPath);
-    expect(result).to.have.lengthOf(created.length);
+    expect(result).toHaveLength(created.length);
     result.forEach((entry, index) => {
-      expect(entry).to.deep.include(formatEntry(created[index], currPath));
+      expect(entry).toMatchObject(formatEntry(created[index], currPath));
     });
   });
 
@@ -400,8 +407,8 @@ describe('various', () => {
     const stream = readdirp(currPath, { type: 'all', highWaterMark: 1 });
     stream
       .on('warn', (warning) => {
-        expect(warning).to.be.an.instanceof(Error);
-        expect(warning.code).to.equals('ENOENT');
+        expect(warning).toBeInstanceOf(Error);
+        expect(warning.code).toBe('ENOENT');
         isWarningCalled = true;
       });
     await delay(1000);
@@ -411,8 +418,8 @@ describe('various', () => {
       waitForEnd(stream),
       delay(2000)
     ]);
-    expect(isWarningCalled).to.equals(true);
-  }).timeout(4000);
+    expect(isWarningCalled).toBe(true);
+  }, 4000);
 
   it('should emit warning for file with strict permission', async () => {
     // Windows doesn't throw permission error if you access permitted directory
@@ -426,15 +433,15 @@ describe('various', () => {
       // eslint-disable-next-line no-empty-function
       .on('data', () => {})
       .on('warn', (warning) => {
-        expect(warning).to.be.an.instanceof(Error);
-        expect(warning.code).to.equals('EACCES');
+        expect(warning).toBeInstanceOf(Error);
+        expect(warning.code).toBe('EACCES');
         isWarningCalled = true;
       });
     await Promise.race([
       waitForEnd(stream),
       delay(2000)
     ]);
-    expect(isWarningCalled).to.equals(true);
+    expect(isWarningCalled).toBe(true);
   });
 
   it('should throw error immediately for file with strict permission', async () => {
@@ -446,8 +453,8 @@ describe('various', () => {
     try {
       await readdirp(currPath, { type: 'all', suppressNormalFlowError: false });
     } catch (e) {
-      expect(e).to.be.an.instanceof(Error);
-      expect(e.code).to.equals('EACCES');
+      expect(e).toBeInstanceOf(Error);
+      expect(e.code).toBe('EACCES');
     }
   });
 
@@ -466,20 +473,20 @@ describe('various', () => {
       // eslint-disable-next-line no-empty-function
       .on('data', () => {})
       .on('warn', (warning) => {
-        expect(warning).to.be.an.instanceof(Error);
-        expect(warning.code).to.equals('EACCES');
-        expect(isEnded).to.equals(false);
+        expect(warning).toBeInstanceOf(Error);
+        expect(warning.code).toBe('EACCES');
+        expect(isEnded).toBe(false);
         isWarningCalled = true;
       })
       .on('end', () => {
-        expect(isWarningCalled).to.equals(true);
+        expect(isWarningCalled).toBe(true);
         isEnded = true;
       });
     await Promise.race([
       waitForEnd(stream),
       delay(2000)
     ]);
-    expect(isWarningCalled).to.equals(true);
-    expect(isEnded).to.equals(true);
+    expect(isWarningCalled).toBe(true);
+    expect(isEnded).toBe(true);
   });
 });

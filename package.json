@@ -35,8 +35,8 @@
   ],
   "scripts": {
     "lint": "eslint --report-unused-disable-directives --ignore-path .gitignore .",
-    "test": "mocha --exit",
-    "coverage": "c8 npm test",
+    "test": "vitest",
+    "coverage": "vitest --coverage",
     "prepublishOnly": "npm run lint && npm test"
   },
   "dependencies": {
@@ -45,11 +45,10 @@
   "devDependencies": {
     "@gulujs/eslint-config": "^0.5.1",
     "@types/node": "^18.11.9",
-    "c8": "^7.12.0",
-    "chai": "^4.3.7",
+    "@vitest/coverage-v8": "^0.34.3",
     "eslint": "^8.28.0",
     "eslint-plugin-node": "^11.1.0",
-    "mocha": "^10.1.0",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "vitest": "^0.34.3"
   }
 }
