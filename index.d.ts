@@ -29,9 +29,12 @@ export interface EntryInfo {
 }
 
 export interface ReaddirpOptions {
+  /**
+   * Path in which to start reading and recursing into subdirectories.
+   */
   root?: string;
   /**
-   * filter to include or exclude files. A `Function`, Glob string or Array of glob strings.
+   * Filter to include or exclude files. A `Function`, Glob string or Array of glob strings.
    *
    * - **Function**: a function that takes an entry info as a parameter and returns true to include or false to exclude the entry
    * - **Glob string**: a string (e.g., `*.js`) which is matched using [picomatch](https://github.com/micromatch/picomatch),
@@ -45,37 +48,39 @@ export interface ReaddirpOptions {
    */
   fileFilter?: string | string[] | ((entry: EntryInfo) => boolean);
   /**
-   * filter to include/exclude directories found and to recurse into.
+   * Filter to include/exclude directories found and to recurse into.
    * Directories that do not pass a filter will not be recursed into.
    */
   directoryFilter?: string | string[] | ((entry: EntryInfo) => boolean);
   /**
-   * when `fileFilter` and `directoryFilter` is glob string,
-   * use which entry value ('basename' or 'path') to test.
-   * default is 'basename'.
+   * When `fileFilter` and `directoryFilter` is glob string,
+   * use which entry value (`'basename'` or `'path'`) to test.
+   * Default is `'basename'`.
+   * - `'basename'` is the last portion of a `'path'`.
+   * - `'path'` is a relative path based on `root`.
    */
   filterEntryKey?: 'basename' | 'path';
   /**
-   * determines if data events on the stream should be emitted for `'files'` (default), `'directories'`, `'files_directories'`, or `'all'`.
+   * Determines if data events on the stream should be emitted for `'files'` (default), `'directories'`, `'files_directories'`, or `'all'`.
    * Setting to `'all'` will also include entries for other types of file descriptors like character devices, unix sockets and named pipes.
    */
   type?: 'files' | 'directories' | 'files_directories' | 'all';
   /**
-   * include symlink entries in the stream along with files. When `true`, `fs.lstat` would be used instead of `fs.stat`
+   * Include symlink entries in the stream along with files. When `true`, `fs.lstat` would be used instead of `fs.stat`
    */
   lstat?: boolean;
   /**
-   * depth at which to stop recursing even if more subdirectories are found
+   * Depth at which to stop recursing even if more subdirectories are found
    */
   depth?: number;
   /**
-   * always return `stats` property for every file.
+   * Always return `stats` property for every file.
    * Default is `false`, readdirp will return `Dirent` entries.
    * Setting it to `true` can double readdir execution time - use it only when you need file `size`, `mtime` etc.
    */
   alwaysStat?: boolean;
   /**
-   * normal flow error includes 'ENOENT', 'EPERM', 'EACCES', 'ELOOP', 'READDIRP_RECURSIVE_ERROR', will emit as 'warn' event.
+   * Normal flow error includes 'ENOENT', 'EPERM', 'EACCES', 'ELOOP', 'READDIRP_RECURSIVE_ERROR', will emit as 'warn' event.
    * Default is `true`
    * Setting it to `false` will emit these error as 'error' event
    */
