@@ -68,7 +68,7 @@ Filter to include or exclude files. A `Function`, Glob string or Array of glob s
 - **Function**: a function that takes an entry info as a parameter and returns true to include or false to exclude the entry
 - **Glob string**: a string (e.g., `*.js`) which is matched using [picomatch](https://github.com/micromatch/picomatch),
     so go there for more information.
-    Globstars (`**`) are also supported, but it is recommended to set `filterEntryKey` to `'path'`.
+    Globstars (`**`) are also supported, but it is recommended to set `filterEntryKey` to `'path'` or `'fullPath'`.
     Negated globs (as explained in the minimatch documentation) are allowed, e.g., `!*.txt` matches everything but text files.
 - **Array of glob strings**: either need to be all inclusive or all exclusive (negated) patterns otherwise an error is thrown.
     `['*.json', '*.js']` includes all JavaScript and Json files.
@@ -83,10 +83,11 @@ Directories that do not pass a filter will not be recursed into.
 ### `filterEntryKey`
 
 When `fileFilter` and `directoryFilter` is glob string,
-use which entry value (`'basename'` or `'path'`) to test.
+use which entry value (`'basename'` or `'path'` or `'fullPath'`) to test.
 Default is `'basename'`.
 - `'basename'` is the last portion of a `'path'`.
 - `'path'` is a relative path based on `root`.
+   * - `'fullPath'` is an absolute path.
 
 ### `type`
 
