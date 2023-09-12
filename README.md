@@ -68,7 +68,7 @@ Filter to include or exclude files. A `Function`, Glob string or Array of glob s
 - **Function**: a function that takes an entry info as a parameter and returns true to include or false to exclude the entry
 - **Glob string**: a string (e.g., `*.js`) which is matched using [picomatch](https://github.com/micromatch/picomatch),
     so go there for more information.
-    Globstars (`**`) are not supported since specifying a recursive pattern for an already recursive function doesn't make sense.
+    Globstars (`**`) are also supported, but it is recommended to set `filterEntryKey` to `'path'`.
     Negated globs (as explained in the minimatch documentation) are allowed, e.g., `!*.txt` matches everything but text files.
 - **Array of glob strings**: either need to be all inclusive or all exclusive (negated) patterns otherwise an error is thrown.
     `['*.json', '*.js']` includes all JavaScript and Json files.
