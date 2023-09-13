@@ -35,8 +35,8 @@
   ],
   "scripts": {
     "lint": "eslint --report-unused-disable-directives --ignore-path .gitignore .",
-    "test": "vitest",
-    "coverage": "vitest --coverage",
+    "test": "vitest run --silent",
+    "coverage": "vitest run --coverage",
     "prepublishOnly": "npm run lint && npm test"
   },
   "dependencies": {
